@@ -3,7 +3,7 @@
         <ProjectGuid>{06E91556-6FDA-4798-9ABE-EB06E7DF322E}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="STAllureDUnitX\main\AllureDUnitX.dproj">
+        <Projects Include="AllureDUnitXPackage\main\AllureDUnitX.dproj">
             <Dependencies/>
         </Projects>
         <Projects Include="allure-delphi\main\AllureDelphi.dproj">
@@ -27,13 +27,13 @@
         </BorlandProject>
     </ProjectExtensions>
     <Target Name="AllureDUnitX">
-        <MSBuild Projects="STAllureDUnitX\main\AllureDUnitX.dproj"/>
+        <MSBuild Projects="AllureDUnitXPackage\main\AllureDUnitX.dproj"/>
     </Target>
     <Target Name="AllureDUnitX:Clean">
-        <MSBuild Projects="STAllureDUnitX\main\AllureDUnitX.dproj" Targets="Clean"/>
+        <MSBuild Projects="AllureDUnitXPackage\main\AllureDUnitX.dproj" Targets="Clean"/>
     </Target>
     <Target Name="AllureDUnitX:Make">
-        <MSBuild Projects="STAllureDUnitX\main\AllureDUnitX.dproj" Targets="Make"/>
+        <MSBuild Projects="AllureDUnitXPackage\main\AllureDUnitX.dproj" Targets="Make"/>
     </Target>
     <Target Name="AllureDelphi">
         <MSBuild Projects="allure-delphi\main\AllureDelphi.dproj"/>
