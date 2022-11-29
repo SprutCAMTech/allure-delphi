@@ -1,4 +1,4 @@
-unit allureDUnitXLogger;
+﻿unit allureDUnitXLogger;
 
 interface
 
@@ -576,7 +576,7 @@ begin
      Cast(Allure.Lifecycle.GetCurrentObjectOfType(IAllureFixtureResult), IAllureFixtureResult, before)
   then begin
     before.Status := asBroken;
-    before.StatusDetails.Message := TheException.Message;
+    before.StatusDetails.Message := before.StatusDetails.Message + #13#10 + TheException.Message;
     before.StatusDetails.Trace := TheException.StackTrace;
   end;
   EndSetupFixture(Instance, Method, Args, Result);
@@ -593,7 +593,7 @@ begin
   if Cast(Allure.Lifecycle.GetCurrentObjectOfType(IAllureStepResult), IAllureStepResult, step)
   then begin
     step.Status := asBroken;
-    step.StatusDetails.Message := TheException.Message;
+    step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + TheException.Message;
     step.StatusDetails.Trace := TheException.StackTrace;
   end;
   EndSetupTest(Instance, Method, Args, Result);
@@ -616,7 +616,7 @@ begin
     end else begin
       step.Status := asBroken;
     end;
-    step.StatusDetails.Message := TheException.Message;
+    step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + TheException.Message;
     step.StatusDetails.Trace := TheException.StackTrace;
   end;
   EndStepExecute(Instance, Method, Args, Result);
@@ -636,7 +636,7 @@ begin
      Cast(Allure.Lifecycle.GetCurrentObjectOfType(IAllureFixtureResult), IAllureFixtureResult, after)
   then begin
     after.Status := asBroken;
-    after.StatusDetails.Message := TheException.Message;
+    after.StatusDetails.Message := after.StatusDetails.Message + #13#10 + TheException.Message;
     after.StatusDetails.Trace := TheException.StackTrace;
   end;
   EndTearDownFixture(Instance, Method, Args, Result);
@@ -653,7 +653,7 @@ begin
   if Cast(Allure.Lifecycle.GetCurrentObjectOfType(IAllureStepResult), IAllureStepResult, step)
   then begin
     step.Status := asBroken;
-    step.StatusDetails.Message := TheException.Message;
+    step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + TheException.Message;
     step.StatusDetails.Trace := TheException.StackTrace;
   end;
   EndTearDownTest(Instance, Method, Args, Result);
@@ -883,8 +883,17 @@ end;
 
 procedure TDUnitXAllureBaseLogger.OnLog(const logType: TLogLevel;
   const msg: string);
+var
+  iU: IUnknown;
+  iAEI: IAllureExecutableItem;
 begin
-
+  if Assigned(Allure.Lifecycle) then begin
+    iU := Allure.Lifecycle.GetCurrentObjectOfType(IAllureExecutableItem);
+    if Assigned(iU) then begin
+      iAEI := iU as IAllureExecutableItem;
+      iAEI.StatusDetails.Message := iAEI.StatusDetails.Message + #13#10 + msg;
+    end;
+  end;
 end;
 
 procedure TDUnitXAllureBaseLogger.OnSetupFixture(const threadId: TThreadID;
@@ -929,7 +938,7 @@ begin
   if not Error.Test.Active then exit;
   if Cast(Allure.Lifecycle.GetObjectOfTag(TAllureTag(Error.Test)), IAllureTestResult, tr) then begin
     tr.Status := asBroken;
-    tr.StatusDetails.Message := Error.Message;
+    tr.StatusDetails.Message := tr.StatusDetails.Message + #13#10 + Error.Message;
     tr.StatusDetails.Trace := Error.StackTrace;
   end;
 end;
@@ -942,7 +951,7 @@ begin
   if not Failure.Test.Active then exit;
   if Cast(Allure.Lifecycle.GetObjectOfTag(TAllureTag(Failure.Test)), IAllureTestResult, tr) then begin
     tr.Status := asFailed;
-    tr.StatusDetails.Message := Failure.Message;
+    tr.StatusDetails.Message := tr.StatusDetails.Message + #13#10 + Failure.Message;
     tr.StatusDetails.Trace := Failure.StackTrace;
   end;
 end;
@@ -955,7 +964,7 @@ begin
   if not AIgnored.Test.Active then exit;
   if Cast(Allure.Lifecycle.GetObjectOfTag(TAllureTag(AIgnored.Test)), IAllureTestResult, tr) then begin
     tr.Status := asSkipped;
-    tr.StatusDetails.Message := AIgnored.Message;
+    tr.StatusDetails.Message := tr.StatusDetails.Message + #13#10 + AIgnored.Message;
     tr.StatusDetails.Trace := AIgnored.StackTrace;
   end;
 end;
@@ -982,7 +991,7 @@ begin
   if not Test.Test.Active then exit;
   if Cast(Allure.Lifecycle.GetObjectOfTag(TAllureTag(Test.Test)), IAllureTestResult, tr) then begin
     tr.Status := asBroken;
-    tr.StatusDetails.Message := Test.Message;
+    tr.StatusDetails.Message := tr.StatusDetails.Message + #13#10 + Test.Message;
   end;
 end;
 
@@ -1181,7 +1190,7 @@ begin
       TTestResultType.MemoryLeak: step.Status := asBroken;
     end;
     if Results.Message<>'' then
-      step.StatusDetails.Message := Results.Message;
+      step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + Results.Message;
     if Results.StackTrace<>'' then
       step.StatusDetails.Trace := Results.StackTrace;
   end;
@@ -1251,19 +1260,19 @@ begin
     except
       on e: ETestPass do begin
         step.Status := asPassed;
-        step.StatusDetails.Message := e.Message;
+        step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + e.Message;
         step.StatusDetails.Trace := e.StackTrace;
         raise;
       end;
       on e: ETestFailure do begin
         step.Status := asFailed;
-        step.StatusDetails.Message := e.Message;
+        step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + e.Message;
         step.StatusDetails.Trace := e.StackTrace;
         raise;
       end;
       on e: Exception do begin
         step.Status := asBroken;
-        step.StatusDetails.Message := e.Message;
+        step.StatusDetails.Message := step.StatusDetails.Message + #13#10 + e.Message;
         step.StatusDetails.Trace := e.StackTrace;
         raise;
       end;

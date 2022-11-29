@@ -3,6 +3,7 @@
 *.dsk
 *.drc
 *.local
+*.res
 /bin/
 *.~*
 *.tvsconfig

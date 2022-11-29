@@ -12,8 +12,8 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  allureDelphiInterface in '..\main\src\allureDelphiInterface.pas',
-  allureDelphiHelper in '..\main\src\allureDelphiHelper.pas',
+  allureDelphiInterface,
+  allureDelphiHelper,
   uAllureTests in 'uAllureTests.pas';
 
 var

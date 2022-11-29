@@ -3,6 +3,9 @@
         <ProjectGuid>{06E91556-6FDA-4798-9ABE-EB06E7DF322E}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
+        <Projects Include="STAllureDUnitX\main\AllureDUnitX.dproj">
+            <Dependencies/>
+        </Projects>
         <Projects Include="allure-delphi\main\AllureDelphi.dproj">
             <Dependencies/>
         </Projects>
@@ -23,6 +26,15 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
+    <Target Name="AllureDUnitX">
+        <MSBuild Projects="STAllureDUnitX\main\AllureDUnitX.dproj"/>
+    </Target>
+    <Target Name="AllureDUnitX:Clean">
+        <MSBuild Projects="STAllureDUnitX\main\AllureDUnitX.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="AllureDUnitX:Make">
+        <MSBuild Projects="STAllureDUnitX\main\AllureDUnitX.dproj" Targets="Make"/>
+    </Target>
     <Target Name="AllureDelphi">
         <MSBuild Projects="allure-delphi\main\AllureDelphi.dproj"/>
     </Target>
@@ -60,13 +72,13 @@
         <MSBuild Projects="allure-pure-delphi\test\allurePureDelphiTest.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="AllureDelphi;AllureDelphiTest;AllureDUnitXLoggerTest;allurePureDelphiTest"/>
+        <CallTarget Targets="AllureDUnitX;AllureDelphi;AllureDelphiTest;AllureDUnitXLoggerTest;allurePureDelphiTest"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="AllureDelphi:Clean;AllureDelphiTest:Clean;AllureDUnitXLoggerTest:Clean;allurePureDelphiTest:Clean"/>
+        <CallTarget Targets="AllureDUnitX:Clean;AllureDelphi:Clean;AllureDelphiTest:Clean;AllureDUnitXLoggerTest:Clean;allurePureDelphiTest:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="AllureDelphi:Make;AllureDelphiTest:Make;AllureDUnitXLoggerTest:Make;allurePureDelphiTest:Make"/>
+        <CallTarget Targets="AllureDUnitX:Make;AllureDelphi:Make;AllureDelphiTest:Make;AllureDUnitXLoggerTest:Make;allurePureDelphiTest:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

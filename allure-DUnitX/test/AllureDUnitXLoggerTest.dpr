@@ -12,11 +12,11 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
   uAllureDUnitXLoggerTest in 'uAllureDUnitXLoggerTest.pas',
-  allureDUnitXLogger in '..\main\allureDUnitXLogger.pas',
-  allureDelphiHelper in '..\..\allure-delphi\main\src\allureDelphiHelper.pas',
-  allureDelphiInterface in '..\..\allure-delphi\main\src\allureDelphiInterface.pas',
-  MethodsInterceptor in '..\main\MethodsInterceptor.pas',
-  allureAttributes in '..\main\allureAttributes.pas';
+  allureDUnitXLogger,
+  allureDelphiHelper,
+  allureDelphiInterface,
+  MethodsInterceptor,
+  allureAttributes;
 
 var
   runner : ITestRunner;

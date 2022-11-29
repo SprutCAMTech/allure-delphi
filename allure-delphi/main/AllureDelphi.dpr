@@ -1,4 +1,4 @@
-library AllureDelphi;
+﻿library AllureDelphi;
 
 { Important note about DLL memory management: ShareMem must be the
   first unit in your library's USES clause AND your project's (select
@@ -13,11 +13,11 @@ library AllureDelphi;
 uses
   System.SysUtils,
   System.Classes,
-  allureDelphiInterface in 'src\allureDelphiInterface.pas',
+  allureDelphiInterface,
+  allureDelphiHelper,
   allureLifecycle in 'src\allureLifecycle.pas',
   allureCommon in 'src\allureCommon.pas',
   allureConfig in 'src\allureConfig.pas',
-  allureDelphiHelper in 'src\allureDelphiHelper.pas',
   allureModel in 'src\allureModel.pas',
   allureThreadSafeList in 'src\allureThreadSafeList.pas',
   allureFileSystemResultsWriter in 'src\allureFileSystemResultsWriter.pas';

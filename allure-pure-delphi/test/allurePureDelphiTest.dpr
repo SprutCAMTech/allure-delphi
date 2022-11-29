@@ -10,8 +10,8 @@ uses
   pureTestAssert in '..\main\pureTestAssert.pas',
   pureTestExceptions in '..\main\pureTestExceptions.pas',
   pureTestConsoleLogger in '..\main\pureTestConsoleLogger.pas',
-  allureDelphiInterface in '..\..\allure-delphi\main\src\allureDelphiInterface.pas',
-  allureDelphiHelper in '..\..\allure-delphi\main\src\allureDelphiHelper.pas',
+  allureDelphiInterface,
+  allureDelphiHelper,
   pureTestExample in 'pureTestExample.pas',
   pureTestAllureLogger in '..\main\pureTestAllureLogger.pas';
 

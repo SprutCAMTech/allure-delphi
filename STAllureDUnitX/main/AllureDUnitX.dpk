@@ -1,0 +1,44 @@
+package AllureDUnitX;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS OFF}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS ON}
+{$RANGECHECKS ON}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST ON}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  vclimg,
+  DUnitXRuntime;
+
+contains
+  allureDelphiHelper in '..\..\allure-delphi\main\src\allureDelphiHelper.pas',
+  allureDelphiInterface in '..\..\allure-delphi\main\src\allureDelphiInterface.pas',
+  allureAttributes in '..\..\allure-DUnitX\main\allureAttributes.pas',
+  allureDUnitXLogger in '..\..\allure-DUnitX\main\allureDUnitXLogger.pas',
+  MethodsInterceptor in '..\..\allure-DUnitX\main\MethodsInterceptor.pas';
+
+end.
