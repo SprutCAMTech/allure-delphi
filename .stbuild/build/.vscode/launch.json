@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/SprutCAM_build.exe",
+            "program": "${workspaceFolder}/bin/dallure_build.exe",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

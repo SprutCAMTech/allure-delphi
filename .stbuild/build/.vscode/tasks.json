@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/SprutCAM_build.csproj",
+                "${workspaceFolder}/dallure_build.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/SprutCAM_build.csproj",
+                "${workspaceFolder}/dallure_build.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -34,7 +34,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/SprutCAM_build.csproj"
+                "${workspaceFolder}/dallure_build.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
