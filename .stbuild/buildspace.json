@@ -1,0 +1,181 @@
+{
+	"$schema": "https://download.sprutcam.com/download/sprutcam/schema/buildspace.v1.1.2.schema.json",
+
+	"projects": [
+		"../allure-delphi/main/.stbuild/AllureDelphiProject.json",
+		"../AllureDUnitXPackage/main/.stbuild/AllureDUnitXProject.json"
+	],
+	
+	"variants": [
+		{
+			"name": "Debug_x32",
+			"configuration": "Debug",
+			"platform": "Win32"
+		},
+		{
+			"name": "Debug_x64",
+			"configuration": "Debug",
+			"platform": "Win64"
+		},
+		{
+			"name": "Release_x32",
+			"configuration": "Release",
+			"platform": "Win32"
+		},
+		{
+			"name": "Release_x64",
+			"configuration": "Release",
+			"platform": "Win64"
+		}
+	],
+	
+	"objects": [
+		{
+			"Builder.MSBuilder": {
+				"name": "builder_delphi_release_common",
+				"msbuilder_path": "$vars:msbuilder_path$",
+				"env_bds": "$vars:env_bds$",
+				"build_params": {
+					"-verbosity": "normal",
+					"-consoleloggerparameters": "ErrorsOnly",
+					"-nologo": "true",
+					"/p:DCC_Warnings": "false",
+					"/p:DCC_Hints": "false",
+					"/p:DCC_MapFile": "3",
+					"/p:DCC_AssertionsAtRuntime": "true",
+					"/p:DCC_DebugInformation": "2",
+					"/p:DCC_DebugDCUs": "false",
+					"/p:DCC_IOChecking": "true",
+					"/p:DCC_WriteableConstants": "true",
+					"/t:build": "true",
+					"/p:DCC_Optimize":  "false",
+					"/p:DCC_GenerateStackFrames": "false",
+					"/p:DCC_LocalDebugSymbols": "false",
+					"/p:DCC_SymbolReferenceInfo": "0",
+					"/p:DCC_IntegerOverflowCheck": "false",
+					"/p:DCC_RangeChecking": "false",
+					"/p:DCC_DcuOutput": "../bin/$variant:platform$/dcu/$native_project:name$"
+				}
+			}
+		},
+		{
+			"Builder.MSBuilder": { 
+				"name": "builder_delphi_debug_common",
+				"msbuilder_path": "$vars:msbuilder_path$",
+				"env_bds": "$vars:env_bds$",
+				"build_params": {
+					"-verbosity": "normal",
+					"-consoleloggerparameters": "ErrorsOnly",
+					"-nologo": "true",
+					"/p:DCC_Warnings": "false",
+					"/p:DCC_Hints": "false",
+					"/p:DCC_MapFile": "3",
+					"/p:DCC_AssertionsAtRuntime": "true",
+					"/p:DCC_DebugInformation": "2",
+					"/p:DCC_DebugDCUs": "false",
+					"/p:DCC_IOChecking": "true",
+					"/p:DCC_WriteableConstants": "true",
+					"/t:build": "true",
+					"/p:DCC_Optimize":  "false",
+					"/p:DCC_GenerateStackFrames": "true",
+					"/p:DCC_LocalDebugSymbols": "true",
+					"/p:DCC_SymbolReferenceInfo": "2",
+					"/p:DCC_IntegerOverflowCheck": "true",
+					"/p:DCC_RangeChecking": "true",
+					"/p:DCC_DcuOutput": "../bin/$variant:platform$/dcu/$native_project:name$"
+				}
+			}
+		},
+		{
+			"PackageManager.Nuget": {
+				"name": "package_manager_nuget_master",
+				"source": "$vars:nuget_source$",
+				"api_key": "$vars:nuget_api_key$",
+				"version_manager": {
+					"VersionManager.Common": {
+					   "name": "version_manager_common",
+					   "increment_type": "NextPatch",
+					   "increment_value": "NextValue"
+					//    "release_label": ""
+					}
+				 },
+				"file_copier": {
+					"FileCopier.Common": {
+						"name": "common_copier"
+					}
+				}
+			}
+		},
+		{
+			"Reclaimer.NugetCommon": {
+				"name": "reclaimer_main",
+				"source": "$vars:nuget_source$",
+				"api_key": "$vars:nuget_api_key$",
+				"strategies": [
+					{
+						"UnusedOld": {
+							"name": "common"
+							//"max_live_days": 1
+						}
+					}
+				]
+			}
+		},
+		{
+			"Restorer.Nuget": {
+				"name": "restorer_main",
+				"packages": [
+					// {
+					// 	"package_id": "",
+					// 	"version": "",
+					// 	"OutDir": "./bin"
+					// }
+				]
+			}
+		},
+		{
+			"ProjectCache.Common": {
+				"name": "project_cache_common",
+				"temp_dir": "./hash",
+				"hash_generator": {
+					"HashGenerator.Common": {
+						"name": "hash_generator_main",
+						"algorithm": "Sha256"
+					}
+				}
+			}
+		},
+		{
+			"Cleaner.Common": {
+			   "name": "cleaner_default_main",
+			   "all_build_results": true
+			}
+		 },
+		 {
+			"Cleaner.Common": {
+			   "name": "cleaner_delphi_main",
+			   "all_build_results": true,
+			   "paths": {
+				  "$project:output_dcu$": ["*.dcu", "*.res", "*.dfm"]
+			   }
+			}
+		 }
+	],
+	"package_manager": "package_manager_nuget_master",
+	"reclaimer": "reclaimer_main",
+	"builder_idl": null,
+	"builder_delphi": {
+		"Debug_x64": "builder_delphi_debug_common",
+		"Release_x64": "builder_delphi_release_common",
+		"Debug_x32": "builder_delphi_release_common",
+		"Release_x32": "builder_delphi_release_common"
+	},
+	"cleaner": "cleaner_default_main",
+	"cleaner_idl": null,
+	"cleaner_delphi": "cleaner_delphi_main",
+	"binder": null,
+	"gen_lang": null,
+	"signer": null,
+	"restorer": "restorer_main",
+	"project_cache": "project_cache_common"
+}

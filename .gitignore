@@ -8,3 +8,11 @@
 *.~*
 *.tvsconfig
 *.stat
+
+# Build system files
+/.stbuild/.nuke/temp
+/.stbuild/temp
+/.stbuild/hash
+/.stbuild/build/bin
+/.stbuild/build/obj
+/.stbuild/buildspace.local.json

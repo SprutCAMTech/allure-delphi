@@ -1,0 +1,43 @@
+{
+	"project_path": "../AllureDelphi.dproj",
+	"type": "Delphi",
+	"sources": [
+		"./*.json",
+		"$native_project:sources$"
+	],
+
+	"title": "SprutTech $native_project:name$.dll",
+	"authors": ["SprutTech"],
+	"owners":  ["Sprut Technology"],
+	"language": "en-US",
+	"version": "0.0", 
+
+	"dependencies": [ { "NativeDependencies": { } } ],
+
+	"packages": [
+		{
+			"class": "Nuget",
+			"id": "SprutTechnology.$native_project:name$.x64",
+			"group": "x64",
+			"variant_files": {
+				"Release_x64": [ {
+					"files": {
+						"$project:output_dll$/$native_project:name$.dll": "build"
+					}
+				} ]
+			}
+		},
+		{
+			"class": "Nuget",
+			"id": "SprutTechnology.$native_project:name$.x32",
+			"group": "x32",
+			"variant_files": {
+				"Release_x32": [ {
+					"files": {
+						"$project:output_dll$/$native_project:name$.dll": "build"
+					}
+				} ]
+			}
+		}
+	]
+}

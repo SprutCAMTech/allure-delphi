@@ -1,0 +1,15 @@
+{
+	"vars": {
+		"user_name": "",
+		"nuget_source": "",
+		"nuget_api_key": "",
+		"tlbimp_path": "c:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.8 Tools/tlbimp.exe",
+		"msbuilder_path": "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe",
+		"msbuilder_cpp_path": "c:/Program Files/Microsoft Visual Studio/2022/Community/Msbuild/Current/Bin/MSBuild.exe",
+		"sign_tool_path": "C:/Program Files (x86)/Windows Kits/10/bin/10.0.22000.0/x64/signtool.exe",
+		"BDSLIB": "C:/Users/Public/Documents/Embarcadero/Studio/22.0/Bpl",
+		"env_bds": "c:/program files (x86)/embarcadero/studio/22.0"
+	},
+	"defines": [ ],
+	"signer": null
+}
