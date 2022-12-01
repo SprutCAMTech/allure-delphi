@@ -12,7 +12,11 @@
 	"language": "en-US",
 	"version": "0.0", 
 
-	"dependencies": [ { "NativeDependencies": { } } ],
+	"dependencies": [ { "NativeDependencies": 
+		{ 
+			"include": "build" 
+		} 
+	} ],
 
 	"packages": [
 		{

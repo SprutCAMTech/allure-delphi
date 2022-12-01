@@ -60,7 +60,7 @@ public class Build : NukeBuild
             logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
             var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            projectList.compile(RunSettings);
+            projectList.Compile(RunSettings);
         });
 
     private Target CompileAllReleasePlatf => _ => _
@@ -70,8 +70,8 @@ public class Build : NukeBuild
             logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
             var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            projectList.compile("Release_x32");
-            projectList.compile("Release_x64");
+            projectList.Compile("Release_x32");
+            projectList.Compile("Release_x64");
         });
 
     /// <summary>
@@ -86,7 +86,7 @@ public class Build : NukeBuild
             var logger = new LoggerConsole();
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
             var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            projectList.deploy(RunSettings);
+            projectList.Deploy(RunSettings);
         });
 
     /// <summary>
@@ -100,7 +100,7 @@ public class Build : NukeBuild
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
             var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
             //projectList.Reverse();
-            projectList.reclaim(RunSettings);
+            projectList.Reclaim(RunSettings);
         });
 
     /// <summary>
