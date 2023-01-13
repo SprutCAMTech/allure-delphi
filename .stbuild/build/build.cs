@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Nuke.Common;
 using SprutTechnology.BuildSystem;
+using SprutTechnology.BuildSystem.Info;
 using SprutTechnology.Logging.Console;
-using LogLevel = SprutTechnology.Logging.LogLevel;
 
 /// <inheritdoc />
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
@@ -11,108 +11,115 @@ public class Build : NukeBuild
     /// <summary>
     /// Calling method when running
     /// </summary>
-    // ReSharper disable once InconsistentNaming
     public static int Main() => Execute<Build>(x => x.Compile);
     
     /// <summary>
     /// Configuration to build - 'Debug' (default) or 'Release'
     /// </summary>
     [Parameter("Settings provided for running build space")]
-    public readonly string RunSettings = "Release_x64";
+    public readonly string Variant = "Release_x64";
 
     /// <summary>
-    /// Variable through targets
+    /// Defines a file name suffix with local settings
     /// </summary>
+    [Parameter("Defines a file name suffix with local settings")]
+    public readonly string Local = "local";
+
+    /// <summary>
+    /// Don't restore any dependencies
+    /// </summary>
+    [Parameter("Don't restore any dependencies", Name = "no-restore")]
+    public readonly string NoRestore = "false";
+
+    /// <summary>
+    /// Don't check that project dependencies build results were copied into parent project output folder. If parent
+    /// project was compiled, then miss copying build results of dependency projects
+    /// </summary>
+    [Parameter("Don't restore any dependencies", Name = "no-check-restored-files")]
+    public readonly string NoCheckRestoredFiles = "false";
+
+    /// <summary> Variable through targets </summary>
     private IBuildSpace? _buildSpace;
 
-    /// <summary>
-    /// Download dependencies, which set in settings, and build them into package (according to settings)
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    /// <summary> Set build constants </summary>
+    private Target SetBuildInfo => _ => _
+    .Executes(() => {
+        // params provided to command line
+        BuildInfo.RunParams[RunInfo.Variant] = Variant;
+        _buildSpace?.Logger.debug($"{nameof(RunInfo.Variant)}:{Variant}");
+
+        BuildInfo.RunParams[RunInfo.NoRestore] = NoRestore;
+        _buildSpace?.Logger.debug($"{nameof(RunInfo.NoRestore)}:{NoRestore}");
+
+        BuildInfo.RunParams[RunInfo.NoCheckRestoredFiles] = NoCheckRestoredFiles;
+        _buildSpace?.Logger.debug($"{nameof(RunInfo.NoCheckRestoredFiles)}:{NoCheckRestoredFiles}");
+
+        BuildInfo.RunParams[RunInfo.Local] = Local;
+        _buildSpace?.Logger.debug($"{nameof(RunInfo.Local)}:{Local}");
+    });
+
+    /// <summary> Restoring build space </summary>
     private Target Restore => _ => _
-        .Executes(() =>
-        {
+        .DependsOn(SetBuildInfo)
+        .Executes(() => {
             var logger = new LoggerConsole();
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            _buildSpace.restorePackageDependencies(RunSettings);
+            _buildSpace.Restore(Variant);
         });
 
-    /// <summary>
-    /// Clone repositories, which are set as VCS dependencies
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    /// <summary> Clone repositories, which are set as VCS dependencies </summary>
     private Target DownloadRepos => _ => _
-        .Executes(() =>
-        {
+        .DependsOn(SetBuildInfo)
+        .Executes(() => {
             var logger = new LoggerConsole();
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
             _buildSpace.RestoreVcsDependencies();
         });
 
-    /// <summary>
-    /// Prepare binary files for copying into packages
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    /// <summary> Parameterized compile </summary>
     private Target Compile => _ => _
-        .Executes(() =>
-        {
+        .DependsOn(SetBuildInfo)
+        .Executes(() => {
             var logger = new LoggerConsole();
-            logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
+            // logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            projectList.Compile(RunSettings);
+            _buildSpace.Projects.Compile(Variant, true);
         });
 
+    /// <summary> Compiling projects for all release configurations </summary>
     private Target CompileAllReleasePlatf => _ => _
-        .Executes(() =>
-        {
+        .DependsOn(SetBuildInfo)
+        .Executes(() => {
             var logger = new LoggerConsole();
-            logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
+            // logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            projectList.Compile("Release_x32");
-            projectList.Compile("Release_x64");
+            _buildSpace.Projects.Compile("Release_x32", true);
+            _buildSpace.Projects.Compile("Release_x64", true);
         });
 
-    /// <summary>
-    /// Publishing packages into storage
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    /// <summary> Publishing packages </summary>
     private Target Deploy => _ => _
-        .DependsOn(DownloadRepos)
-        .DependsOn(CompileAllReleasePlatf)
-        .Executes(() =>
-        {
+        .Before(DownloadRepos)
+        .DependsOn(CompileAllReleasePlatf) //include SetBuildInfo
+        .Executes(() => {
             var logger = new LoggerConsole();
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            projectList.Deploy(RunSettings);
+            _buildSpace.Projects.Deploy(Variant, false);
         });
 
-    /// <summary>
-    /// Deleting old versions of packages
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    /// <summary> Deleting old versions of packages </summary>
     private Target Reclaim => _ => _
-        .Executes(() =>
-        {
+        .Executes(() => {
             var logger = new LoggerConsole();
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            var projectList = _buildSpace.getOrderedProjects(ProjectQueryType.Dependency);
-            //projectList.Reverse();
-            projectList.Reclaim(RunSettings);
+            _buildSpace.Projects.Reclaim(Variant);
         });
 
-    /// <summary>
-    /// Clean build results for each project
-    /// </summary>
-    // ReSharper disable once UnusedMember.Local
+    /// <summary> Cleaning build results </summary>
     private Target Clean => _ => _
-        .Executes(() =>
-        {
+        .Executes(() => {
             var logger = new LoggerConsole();
-            logger.MinLevel = LogLevel.Debug;
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            _buildSpace.Projects.Clean(RunSettings);
+            _buildSpace.Projects.Clean(Variant);
         });
 }

@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/dallure_build.csproj",
+                "${workspaceFolder}/stbuild.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/dallure_build.csproj",
+                "${workspaceFolder}/stbuild.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -34,7 +34,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/dallure_build.csproj"
+                "${workspaceFolder}/stbuild.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

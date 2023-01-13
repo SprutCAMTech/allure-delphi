@@ -35,6 +35,18 @@
             "VSCode"
           ]
         },
+        "Local": {
+          "type": "string",
+          "description": "Defines a file name suffix with local settings"
+        },
+        "no-check-restored-files": {
+          "type": "string",
+          "description": "Don't restore any dependencies"
+        },
+        "no-restore": {
+          "type": "string",
+          "description": "Don't restore any dependencies"
+        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
@@ -58,10 +70,6 @@
           "type": "string",
           "description": "Root directory during build execution"
         },
-        "RunSettings": {
-          "type": "string",
-          "description": "Settings provided for running build space"
-        },
         "Skip": {
           "type": "array",
           "description": "List of targets to be skipped. Empty list skips all dependencies",
@@ -74,7 +82,8 @@
               "Deploy",
               "DownloadRepos",
               "Reclaim",
-              "Restore"
+              "Restore",
+              "SetBuildInfo"
             ]
           }
         },
@@ -90,9 +99,14 @@
               "Deploy",
               "DownloadRepos",
               "Reclaim",
-              "Restore"
+              "Restore",
+              "SetBuildInfo"
             ]
           }
+        },
+        "Variant": {
+          "type": "string",
+          "description": "Settings provided for running build space"
         },
         "Verbosity": {
           "type": "string",

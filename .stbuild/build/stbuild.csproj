@@ -16,6 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="6.2.1" />
-    <PackageReference Include="SprutTechnology.BuildSystem" Version="1.1.101-rc15" />
+    <PackageReference Include="SprutTechnology.BuildSystem" Version="1.1.200-rc.37" />
   </ItemGroup>
 </Project>
