@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Nuke.Common;
+using Nuke.Common.CI.Jenkins;
 using SprutTechnology.BuildSystem;
 using SprutTechnology.BuildSystem.Info;
 using SprutTechnology.Logging.Console;
@@ -17,7 +18,20 @@ public class Build : NukeBuild
     /// Configuration to build - 'Debug' (default) or 'Release'
     /// </summary>
     [Parameter("Settings provided for running build space")]
-    public readonly string Variant = "Release_x64";
+    public readonly string Variant = "Debug_x64";
+
+    /// <summary>
+    /// Projects scope. By default, projects are set to the default value "main". 
+    /// Сan be overridden for each project individually.
+    /// </summary>
+    [Parameter("Projects scope")]
+    public readonly string Scope = "main";
+
+    /// <summary>
+    /// Projects scope ('main' is default)
+    /// </summary>
+    [Parameter("Projects scope")]
+    public readonly string ProjectName = "";
 
     /// <summary>
     /// Defines a file name suffix with local settings
@@ -38,10 +52,14 @@ public class Build : NukeBuild
     [Parameter("Don't restore any dependencies", Name = "no-check-restored-files")]
     public readonly string NoCheckRestoredFiles = "false";
 
-    /// <summary> Variable through targets </summary>
+    /// <summary>
+    /// Variable through targets
+    /// </summary>
     private IBuildSpace? _buildSpace;
 
-    /// <summary> Set build constants </summary>
+    /// <summary>
+    /// Set build constants
+    /// </summary>
     private Target SetBuildInfo => _ => _
     .Executes(() => {
         // params provided to command line
@@ -54,8 +72,33 @@ public class Build : NukeBuild
         BuildInfo.RunParams[RunInfo.NoCheckRestoredFiles] = NoCheckRestoredFiles;
         _buildSpace?.Logger.debug($"{nameof(RunInfo.NoCheckRestoredFiles)}:{NoCheckRestoredFiles}");
 
+        BuildInfo.RunParams[RunInfo.ProjectMask] = ProjectName;
+        _buildSpace?.Logger.debug($"{nameof(RunInfo.ProjectMask)}:{ProjectName}");
+
         BuildInfo.RunParams[RunInfo.Local] = Local;
         _buildSpace?.Logger.debug($"{nameof(RunInfo.Local)}:{Local}");
+
+        // params from build machine
+        BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = Jenkins.Instance?.BranchName ?? "master";
+        BuildInfo.JenkinsParams[JenkinsInfo.BuildDisplayName] = Jenkins.Instance?.BuilDisplayName;
+        BuildInfo.JenkinsParams[JenkinsInfo.BuildNumber] = Jenkins.Instance?.BuildNumber;
+        BuildInfo.JenkinsParams[JenkinsInfo.BuildTag] = Jenkins.Instance?.BuildTag;
+        BuildInfo.JenkinsParams[JenkinsInfo.ChangeId] = Jenkins.Instance?.ChangeId;
+        BuildInfo.JenkinsParams[JenkinsInfo.ExecutorNumber] = Jenkins.Instance?.ExecutorNumber;
+        BuildInfo.JenkinsParams[JenkinsInfo.GitBranch] = Jenkins.Instance?.GitBranch;
+        BuildInfo.JenkinsParams[JenkinsInfo.GitCommit] = Jenkins.Instance?.GitCommit;
+        BuildInfo.JenkinsParams[JenkinsInfo.GitPreviousCommit] = Jenkins.Instance?.GitPreviousCommit;
+        BuildInfo.JenkinsParams[JenkinsInfo.GitPreviousSuccessfulCommit] = Jenkins.Instance?.GitPreviousSuccessfulCommit;
+        BuildInfo.JenkinsParams[JenkinsInfo.GitUrl] = Jenkins.Instance?.GitUrl;
+        BuildInfo.JenkinsParams[JenkinsInfo.JenkinsHome] = Jenkins.Instance?.JenkinsHome;
+        BuildInfo.JenkinsParams[JenkinsInfo.JobBaseName] = Jenkins.Instance?.JobBaseName;
+        BuildInfo.JenkinsParams[JenkinsInfo.JobDisplayUrl] = Jenkins.Instance?.JobDisplayUrl;
+        BuildInfo.JenkinsParams[JenkinsInfo.JobName] = Jenkins.Instance?.JobName;
+        BuildInfo.JenkinsParams[JenkinsInfo.NodeLabels] = Jenkins.Instance?.NodeLabels;
+        BuildInfo.JenkinsParams[JenkinsInfo.NodeName] = Jenkins.Instance?.NodeName;
+        BuildInfo.JenkinsParams[JenkinsInfo.RunChangesDisplayUrl] = Jenkins.Instance?.RunChangesDisplayUrl;
+        BuildInfo.JenkinsParams[JenkinsInfo.RunDisplayUrl] = Jenkins.Instance?.RunDisplayUrl;
+        BuildInfo.JenkinsParams[JenkinsInfo.Workspace] = Jenkins.Instance?.Workspace;
     });
 
     /// <summary> Restoring build space </summary>
@@ -91,7 +134,7 @@ public class Build : NukeBuild
         .DependsOn(SetBuildInfo)
         .Executes(() => {
             var logger = new LoggerConsole();
-            // logger.MinLevel = SprutTechnology.Logging.LogLevel.Debug;
+            // logger.MinLevel = SprutTechnology.Logging.LogLevel.debug;
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
             _buildSpace.Projects.Compile("Release_x32", true);
             _buildSpace.Projects.Compile("Release_x64", true);
@@ -104,7 +147,7 @@ public class Build : NukeBuild
         .Executes(() => {
             var logger = new LoggerConsole();
             _buildSpace ??= new BuildSpace(logger, RootDirectory);
-            _buildSpace.Projects.Deploy(Variant, false);
+            _buildSpace.Projects.Deploy(Variant);
         });
 
     /// <summary> Deleting old versions of packages </summary>

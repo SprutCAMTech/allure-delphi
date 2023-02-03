@@ -66,9 +66,17 @@
             "type": "string"
           }
         },
+        "ProjectName": {
+          "type": "string",
+          "description": "Projects scope"
+        },
         "Root": {
           "type": "string",
           "description": "Root directory during build execution"
+        },
+        "Scope": {
+          "type": "string",
+          "description": "Projects scope"
         },
         "Skip": {
           "type": "array",

@@ -87,17 +87,18 @@
 			}
 		},
 		{
+			"VersionManager.Common": {
+				"name": "version_manager_common",
+				"increment_type": "NextPatch",
+				"increment_value": "NextValue",
+				"start_value": "1"
+			}
+		},
+		{
 			"PackageManager.Nuget": {
 				"name": "package_manager_nuget_master",
 				"source": "$vars:nuget_source$",
 				"api_key": "$vars:nuget_api_key$",
-				"version_manager": {
-					"VersionManager.Common": {
-					   "name": "version_manager_common",
-					   "increment_type": "NextPatch",
-					   "increment_value": "NextValue"
-					}
-				 },
 				"file_copier": {
 					"FileCopier.Common": {
 						"name": "common_copier"
@@ -128,13 +129,13 @@
 		{
 			"ProjectCache.Common": {
 				"name": "project_cache_common",
-				"temp_dir": "./hash",
-				"hash_generator": {
-					"HashGenerator.Common": {
-						"name": "hash_generator_main",
-						"algorithm": "Sha256"
-					}
-				}
+				"temp_dir": "./hash"
+			}
+		},
+		{
+			"HashGenerator.Common": {
+				"name": "hash_generator_main",
+				"algorithm": "Sha256"
 			}
 		},
 		{
@@ -154,6 +155,8 @@
 		 }
 	],
 	"package_manager": "package_manager_nuget_master",
+	"hash_generator": "hash_generator_main",
+	"version_manager": "version_manager_common",
 	"reclaimer": "reclaimer_main",
 	"builder_idl": null,
 	"builder_delphi": {
