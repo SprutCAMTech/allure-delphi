@@ -8,9 +8,9 @@
 
 	"title": "SprutTech $native_project:name$.dll",
 	"authors": ["SprutTech"],
-	"owners":  ["Sprut Technology"],
+	"owners":  ["SprutTech"],
 	"language": "en-US",
-	"version": "0.0", 
+	"version": "1.0", 
 
 	"dependencies": [ 
 		{ 
@@ -23,11 +23,12 @@
 	"packages": [
 		{
 			"class": "Nuget",
-			"id": "SprutTechnology.$native_project:name$.x64",
+			"id": "SprutCAMTech.$native_project:name$.x64",
 			"group": "x64",
 			"variant_files": {
 				"Release_x64": [ {
 					"files": {
+						"$project:output_dll$/$native_project:name$.stbuildresult.json": "build",
 						"$project:output_dll$/$native_project:name$.dll": "build"
 					}
 				} ]
@@ -35,11 +36,12 @@
 		},
 		{
 			"class": "Nuget",
-			"id": "SprutTechnology.$native_project:name$.x32",
+			"id": "SprutCAMTech.$native_project:name$.x32",
 			"group": "x32",
 			"variant_files": {
 				"Release_x32": [ {
 					"files": {
+						"$project:output_dll$/$native_project:name$.stbuildresult.json": "build",
 						"$project:output_dll$/$native_project:name$.dll": "build"
 					}
 				} ]

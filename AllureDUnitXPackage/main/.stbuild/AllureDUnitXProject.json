@@ -8,35 +8,39 @@
 
 	"title": "SprutTech $native_project:name$ package",
 	"authors": ["SprutTech"],
-	"owners":  ["Sprut Technology"],
+	"owners":  ["SprutTech"],
 	"language": "en-US",
-	"version": "0.0", 
+	"version": "1.0", 
 
 	"packages": [
 		{
 			"class": "Nuget",
-			"id": "SprutTechnology.$native_project:name$.x64",
+			"id": "SprutCAMTech.$native_project:name$.x64",
 			"group": "x64",
 			"variant_files": {
 				"Release_x64": [ {
 					"files": {
+						"$project:output_bpl$/$native_project:name$.stbuildresult.json": "build",
 						"$project:output_bpl$/$native_project:name$.bpl": "build",
 						"$project:output_dcp$/$native_project:name$.dcp": "build/dcu",
-						"$project:output_dcu$/*.dcu": "build/dcu/$native_project:name$"
+						"$project:output_dcu$/*.dcu": "build/dcu/$native_project:name$",
+						"$project:source_pas$": "build/dcu/$native_project:name$/src"
 					}
 				} ]
 			}
 		},
 		{
 			"class": "Nuget",
-			"id": "SprutTechnology.$native_project:name$.x32",
+			"id": "SprutCAMTech.$native_project:name$.x32",
 			"group": "x32",
 			"variant_files": {
 				"Release_x32": [ {
 					"files": {
+						"$project:output_bpl$/$native_project:name$.stbuildresult.json": "build",
 						"$project:output_bpl$/$native_project:name$.bpl": "build",
 						"$project:output_dcp$/$native_project:name$.dcp": "build/dcu",
-						"$project:output_dcu$/*.dcu": "build/dcu/$native_project:name$"
+						"$project:output_dcu$/*.dcu": "build/dcu/$native_project:name$",
+						"$project:source_pas$": "build/dcu/$native_project:name$/src"
 					}
 				} ]
 			}
