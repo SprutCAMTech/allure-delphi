@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="6.3.0" />
-    <PackageReference Include="SprutCAMTech.BuildSystem" Version="1.1.100-rc.4" />
+    <PackageReference Include="Nuke.Common" Version="7.0.0" />
+    <PackageReference Include="SprutCAMTech.BuildSystem" Version="1.1.100-rc.55" />
     <PackageReference Include="SprutCAMTech.Logging.Console" Version="1.0.100-rc" />
   </ItemGroup>
 </Project>

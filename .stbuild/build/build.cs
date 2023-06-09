@@ -56,38 +56,17 @@ public class Build : NukeBuild
         BuildInfo.RunParams[RunInfo.Variant] = Variant;
         BuildInfo.RunParams[RunInfo.NoRestore] = "false";
         BuildInfo.RunParams[RunInfo.NoCheckRestoredFiles] = "false";
-        BuildInfo.RunParams[RunInfo.Local] = "local";
+        BuildInfo.RunParams[RunInfo.Local] = Jenkins.Instance != null ? "jenkins" : "local";
+        foreach (var runParam in BuildInfo.RunParams)
+            Logger.info($"{runParam.Key}: {runParam.Value}");
 
-        // jenkins machine params
+        // jenkins params
         if (Jenkins.Instance != null) {
-            BuildInfo.RunParams[RunInfo.Local] = "jenkins";
-            BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = Jenkins.Instance.BranchName ?? "develop";
-            BuildInfo.JenkinsParams[JenkinsInfo.BuildDisplayName] = Jenkins.Instance.BuilDisplayName;
-            BuildInfo.JenkinsParams[JenkinsInfo.BuildNumber] = Jenkins.Instance.BuildNumber;
-            BuildInfo.JenkinsParams[JenkinsInfo.BuildTag] = Jenkins.Instance.BuildTag;
-            BuildInfo.JenkinsParams[JenkinsInfo.ChangeId] = Jenkins.Instance.ChangeId;
-            BuildInfo.JenkinsParams[JenkinsInfo.ExecutorNumber] = Jenkins.Instance.ExecutorNumber;
-            BuildInfo.JenkinsParams[JenkinsInfo.GitBranch] = Jenkins.Instance.GitBranch;
-            BuildInfo.JenkinsParams[JenkinsInfo.GitCommit] = Jenkins.Instance.GitCommit;
-            BuildInfo.JenkinsParams[JenkinsInfo.GitPreviousCommit] = Jenkins.Instance.GitPreviousCommit;
-            BuildInfo.JenkinsParams[JenkinsInfo.GitPreviousSuccessfulCommit] = Jenkins.Instance.GitPreviousSuccessfulCommit;
-            BuildInfo.JenkinsParams[JenkinsInfo.GitUrl] = Jenkins.Instance.GitUrl;
-            BuildInfo.JenkinsParams[JenkinsInfo.JenkinsHome] = Jenkins.Instance.JenkinsHome;
-            BuildInfo.JenkinsParams[JenkinsInfo.JobBaseName] = Jenkins.Instance.JobBaseName;
-            BuildInfo.JenkinsParams[JenkinsInfo.JobDisplayUrl] = Jenkins.Instance.JobDisplayUrl;
-            BuildInfo.JenkinsParams[JenkinsInfo.JobName] = Jenkins.Instance.JobName;
-            BuildInfo.JenkinsParams[JenkinsInfo.NodeLabels] = Jenkins.Instance.NodeLabels;
-            BuildInfo.JenkinsParams[JenkinsInfo.NodeName] = Jenkins.Instance.NodeName;
-            BuildInfo.JenkinsParams[JenkinsInfo.RunChangesDisplayUrl] = Jenkins.Instance.RunChangesDisplayUrl;
-            BuildInfo.JenkinsParams[JenkinsInfo.RunDisplayUrl] = Jenkins.Instance.RunDisplayUrl;
-            BuildInfo.JenkinsParams[JenkinsInfo.Workspace] = Jenkins.Instance.Workspace;
-            Logger.info("Current branch: " + BuildInfo.JenkinsParams[JenkinsInfo.BranchName]);
-            Logger.info("ChangeId: " + Jenkins.Instance.ChangeId);
-            Logger.info("Change target: " + Environment.GetEnvironmentVariable("CHANGE_TARGET"));
-        }
-
-        Logger.debug($"{nameof(RunInfo.Variant)}:{Variant}");
-        Logger.debug($"{nameof(RunInfo.Local)}:{BuildInfo.RunParam(RunInfo.Local)}");
+            BuildInfo.ReadJenkinsParams();
+            foreach (var runParam in BuildInfo.JenkinsParams)
+                Logger.info($"{runParam.Key}: {runParam.Value}");
+        } else
+            BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = "develop"; // dev branch by default
     });
 
     /// <summary> Restoring build space </summary>
@@ -109,7 +88,7 @@ public class Build : NukeBuild
         .DependsOn(SetBuildInfo)
         .Executes(() => {
             // !! публикация в master feed !!
-            BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = BuildSpaceSettings.MSTBRANCHNAME;
+            BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = "master";
             BSpace.Projects.Compile("Release_x32", true);
             BSpace.Projects.Compile("Release_x64", true);
             BSpace.Projects.Deploy(Variant);

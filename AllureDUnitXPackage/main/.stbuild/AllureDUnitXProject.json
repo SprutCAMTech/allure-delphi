@@ -6,9 +6,9 @@
 		"$native_project:sources$"
 	],
 
-	"title": "SprutTech $native_project:name$ package",
-	"authors": ["SprutTech"],
-	"owners":  ["SprutTech"],
+	"title": "SprutCAMTech $native_project:name$ package",
+	"authors": ["SprutCAMTech"],
+	"owners":  ["SprutCAMTech"],
 	"language": "en-US",
 	"version": "1.0", 
 
