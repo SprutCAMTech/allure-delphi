@@ -76,7 +76,7 @@ procedure TAllureConfiguration.ReadFromJson(const json: TAllureString; const Cur
 //{
 //  "allure": {
 //    "title": "5994A3F7-AF84-46AD-9393-000BB45553CC",
-//    "directory": "allure-results",
+//    "directory": "allure-results",  \\ or "$(ThisFileDirectory)\\allure-results" or ".\\allure-results"
 //    "links": [
 //      "https://example.org/{issue}",
 //      "https://example.org/{tms}"
@@ -131,12 +131,16 @@ begin
         if av.TryGetValue<string>('title', v) then
           fTitle := v;
         if av.TryGetValue<string>('directory', v) then begin
-          fDirectory := v;
+          fDirectory := StringReplace(v, '$(ThisFileDirectory)', CurrentDir,
+            [rfReplaceAll, rfIgnoreCase]);                           // by json directory
           if ExtractFileDrive(fDirectory)='' then begin
-            if CurrentDir<>'' then
-              fDirectory := IncludeTrailingPathDelimiter(CurrentDir) + fDirectory
-            else
-              fDirectory := TPath.GetFullPath(fDirectory);
+            var dir : string := fDirectory;
+            if dir.StartsWith('.') and not dir.StartsWith('..') then // by current working directory
+              fDirectory := TPath.GetFullPath(dir)
+            else begin
+              var fdir := ExtractFileDir(GetModuleName(HInstance));  // by current dll directory
+              fDirectory := TPath.Combine(fdir, dir);
+            end;
           end;
         end;
         if av.TryGetValue<TJSONArray>('links', ls) then begin
