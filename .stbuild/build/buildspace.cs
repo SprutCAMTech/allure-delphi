@@ -23,6 +23,8 @@ class BuildSpaceSettings : SettingsObject
 {
     const StringComparison IGNCASE = StringComparison.CurrentCultureIgnoreCase;
 
+    public const string DEVBRANCHNAME = "develop";
+    public const string MSTBRANCHNAME = "master";
     const string DEVFEED = "https://nexus.office.sprut.ru/repository/dev-feed/index.json";
     const string MSTFEED = "https://nexus.office.sprut.ru/repository/master-feed/index.json";
 
@@ -68,28 +70,33 @@ class BuildSpaceSettings : SettingsObject
     /// Register Build System control objects
     /// </summary>
     private void RegisterBSObjects() {
-        Variants = new() {
-            new() {
-                Name = "Debug_x64",
-                Configurations = new() { [Variant.NodeConfig] = "Debug" },
-                Platforms =      new() { [Variant.NodePlatform] = "Win64" }
+        Variants = new VariantList(new JsonArray
+        {
+            new JsonObject
+            {
+                [Variant.NodeName] = "Debug_x64",
+                [Variant.NodeConfig] = ConfigurationType.Debug.ToString(),
+                [Variant.NodePlatform] = TargetPlatform.Win64.ToString()
             },
-            new() {
-                Name = "Release_x64",
-                Configurations = new() { [Variant.NodeConfig] = "Release" },
-                Platforms =      new() { [Variant.NodePlatform] = "Win64" }
+            new JsonObject
+            {
+                [Variant.NodeName] = "Release_x64",
+                [Variant.NodeConfig] = ConfigurationType.Release.ToString(),
+                [Variant.NodePlatform] = TargetPlatform.Win64.ToString()
             },
-            new() {
-                Name = "Debug_x32",
-                Configurations = new() { [Variant.NodeConfig] = "Debug" },
-                Platforms =      new() { [Variant.NodePlatform] = "Win32" }
+            new JsonObject
+            {
+                [Variant.NodeName] = "Debug_x32",
+                [Variant.NodeConfig] = ConfigurationType.Debug.ToString(),
+                [Variant.NodePlatform] = TargetPlatform.Win32.ToString()
             },
-            new() {
-                Name = "Release_x32",
-                Configurations = new() { [Variant.NodeConfig] = "Release" },
-                Platforms =      new() { [Variant.NodePlatform] = "Win32" }
+            new JsonObject
+            {
+                [Variant.NodeName] = "Release_x32",
+                [Variant.NodeConfig] = ConfigurationType.Release.ToString(),
+                [Variant.NodePlatform] = TargetPlatform.Win32.ToString()
             }
-        };
+        });
 
         ManagerProps = new List<IManagerProp> {
             builderDelphiRelease,
@@ -104,7 +111,7 @@ class BuildSpaceSettings : SettingsObject
         };
 
         foreach (var variant in Variants) {
-            if (variant.Name.StartsWith("Release")) {
+            if (variant.Configuration == ConfigurationType.Release) {
                 ManagerNames.Add("builder_delphi", variant.Name, "builder_delphi_release");
             } else {
                 ManagerNames.Add("builder_delphi", variant.Name, "builder_delphi_debug");
@@ -161,19 +168,13 @@ class BuildSpaceSettings : SettingsObject
         }
     }
 
-    VersionManagerCommonProps versionManagerCommon {
-        get {
-            var branch = BuildInfo.JenkinsParam(JenkinsInfo.BranchName) + "";
-            var vmcp = new VersionManagerCommonProps();
-            vmcp.Name = "version_manager_common";
-            vmcp.DepthSearch = 2;
-            vmcp.StartValue = 1;
-            vmcp.DevelopBranchName = branch.EndsWith("develop", IGNCASE) ? branch : "develop";
-            vmcp.MasterBranchName =  branch.EndsWith("master", IGNCASE) ? branch : "master";
-            vmcp.ReleaseBranchName = branch.EndsWith("release", IGNCASE) ? branch : "release";
-            return vmcp;
-        }
-    }
+    VersionManagerCommonProps versionManagerCommon => new() {
+        Name = "version_manager_common",
+        DepthSearch = 2,
+        StartValue = 1,
+        DevelopBranchName = DEVBRANCHNAME,
+        MasterBranchName = MSTBRANCHNAME
+    };
 
     ProjectCacheCommonProps projectCacheCommon => new() {
         Name = "project_cache_common",
@@ -216,8 +217,8 @@ class BuildSpaceSettings : SettingsObject
 
         // NUGET SOURCE
         var branch = BuildInfo.JenkinsParam(JenkinsInfo.BranchName) + "";
-        if (!string.IsNullOrEmpty(branch))
-            si.Url = branch.EndsWith("master", IGNCASE) ? MSTFEED : DEVFEED; // master/develop
+        if (!String.IsNullOrEmpty(branch))
+            si.Url = branch.StartsWith(MSTBRANCHNAME, IGNCASE) ? MSTFEED : DEVFEED; // master/develop
         else
             si.Url = readerJson.LocalVars["nuget_source"]; //default
 

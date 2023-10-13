@@ -6,9 +6,9 @@
 		"$native_project:sources$"
 	],
 
-	"title": "SprutCAMTech $native_project:name$.dll",
-	"authors": ["SprutCAMTech"],
-	"owners":  ["SprutCAMTech"],
+	"title": "SprutTech $native_project:name$.dll",
+	"authors": ["SprutTech"],
+	"owners":  ["SprutTech"],
 	"language": "en-US",
 	"version": "1.0", 
 
