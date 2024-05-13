@@ -6,16 +6,18 @@
 		"$native_project:sources$"
 	],
 
-	"title": "SprutCAMTech $native_project:name$.dll",
-	"authors": ["SprutCAMTech"],
-	"owners":  ["SprutCAMTech"],
+	"title": "SprutCAM Tech $native_project:name$.dll",
+	"description": "Allure integrations for Delphi test frameworks",
+	"authors": ["SprutCAM Tech"],
+	"owners":  ["SprutCAM Tech"],
 	"language": "en-US",
-	"version": "1.0", 
+	"version": "1.1",
+	"copyright": "$env:package_copyright$",
 
 	"dependencies": [ 
 		{ 
 			"NativeDependencies": { 
-				"include": "build"
+				"is_visible": false
 			}
 		} 
 	],
@@ -23,12 +25,12 @@
 	"packages": [
 		{
 			"class": "Nuget",
-			"id": "SprutCAMTech.$native_project:name$.x64",
-			"group": "x64",
+			"id": "$env:package_prefix$.$native_project:name$.x64",
 			"variant_files": {
 				"Release_x64": [ {
+					"condition": "'$(Platform)' != 'x86'",
 					"files": {
-						"$project:output_dll$/$native_project:name$.stbuildresult.json": "build",
+						"$project:output_dll$/$native_project:name$.stbuildresult.json": "stbuild",
 						"$project:output_dll$/$native_project:name$.dll": "build"
 					}
 				} ]
@@ -36,12 +38,12 @@
 		},
 		{
 			"class": "Nuget",
-			"id": "SprutCAMTech.$native_project:name$.x32",
-			"group": "x32",
+			"id": "$env:package_prefix$.$native_project:name$.x32",
 			"variant_files": {
 				"Release_x32": [ {
+					"condition": "'$(Platform)' == 'x86'",
 					"files": {
-						"$project:output_dll$/$native_project:name$.stbuildresult.json": "build",
+						"$project:output_dll$/$native_project:name$.stbuildresult.json": "stbuild",
 						"$project:output_dll$/$native_project:name$.dll": "build"
 					}
 				} ]

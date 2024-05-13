@@ -1,17 +1,14 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Nuke.Common;
-using Nuke.Common.CI.Jenkins;
-using SprutCAMTech.Logging;
-using SprutCAMTech.Logging.Console;
-using SprutCAMTech.BuildSystem;
+using SprutCAMTech.BuildSystem.BuildSpace;
+using SprutCAMTech.BuildSystem.BuildSpace.Common;
 using SprutCAMTech.BuildSystem.Info;
+using SprutCAMTech.BuildSystem.Logging;
+using SprutCAMTech.BuildSystem.Loggers;
 using SprutCAMTech.BuildSystem.SettingsReader;
 using SprutCAMTech.BuildSystem.SettingsReader.Object;
 
 /// <inheritdoc />
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Build : NukeBuild
 {
     /// <summary>
@@ -30,19 +27,13 @@ public class Build : NukeBuild
 
     private IBuildSpace? _buildSpace;
     /// <summary> Build Space instance </summary>
-    private IBuildSpace BSpace { 
-        get
-        {
-            _buildSpace ??= InitBuildSpace();
-            return _buildSpace;
-        }
-    }
+    private IBuildSpace BSpace => _buildSpace ??= InitBuildSpace();
 
     private IBuildSpace InitBuildSpace() {
         var localJsonFile = Path.Combine(RootDirectory, $"buildspace.{BuildInfo.RunParams[RunInfo.Local]}.json");
         var bsJsonFile = Path.Combine(RootDirectory, "buildspace.json");
-        SettingsObject config = new BuildSpaceSettings(new[] {bsJsonFile, localJsonFile});
-        return new BuildSpace(Logger, RootDirectory + "//temp", SettingsReaderType.Object, config);
+        SettingsObject config = new BuildSpaceSettings(new[] {bsJsonFile, localJsonFile}, RootDirectory, Logger);
+        return new BuildSpaceCommon(Logger, RootDirectory + "//temp", SettingsReaderType.Object, config);
     }
 
     /// <summary>
@@ -50,30 +41,26 @@ public class Build : NukeBuild
     /// </summary>
     private Target SetBuildInfo => _ => _
     .Executes(() => {
-        Logger.setMinLevel(SprutCAMTech.Logging.LogLevel.info);
+        Logger.setMinLevel(SprutCAMTech.BuildSystem.Logging.LogLevel.debug);
 
         // params provided to command line
         BuildInfo.RunParams[RunInfo.Variant] = Variant;
         BuildInfo.RunParams[RunInfo.NoRestore] = "false";
         BuildInfo.RunParams[RunInfo.NoCheckRestoredFiles] = "false";
-        BuildInfo.RunParams[RunInfo.Local] = Jenkins.Instance != null ? "jenkins" : "local";
+        BuildInfo.RunParams[RunInfo.Local] = "local";
         foreach (var runParam in BuildInfo.RunParams)
-            Logger.info($"{runParam.Key}: {runParam.Value}");
-
-        // jenkins params
-        if (Jenkins.Instance != null) {
-            BuildInfo.ReadJenkinsParams();
-            foreach (var runParam in BuildInfo.JenkinsParams)
-                Logger.info($"{runParam.Key}: {runParam.Value}");
-        } else
-            BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = "develop"; // dev branch by default
+            Logger.debug($"{runParam.Key}: {runParam.Value}");
+        
+        // current branch
+        BuildInfo.JenkinsParams.Add(JenkinsInfo.BranchName, "develop");
+        Logger.debug("Current branch: " + BuildInfo.JenkinsParams[JenkinsInfo.BranchName]);
     });
 
     /// <summary> Restoring build space </summary>
     private Target Restore => _ => _
         .DependsOn(SetBuildInfo)
         .Executes(() => {
-            BSpace.Restore(Variant);
+            BSpace.Projects.Restore(Variant);
         });
 
     /// <summary> Parameterized compile </summary>
@@ -83,15 +70,20 @@ public class Build : NukeBuild
             BSpace.Projects.Compile(Variant, true);
         });
 
+    /// <summary> Compiling projects for all release configurations </summary>
+    private Target CompileAllRelease => _ => _
+        .DependsOn(SetBuildInfo)
+        .Executes(() => {
+            BSpace.Projects.Compile("Release_x32", true);
+            BSpace.Projects.Compile("Release_x64", true);
+        });
+
     /// <summary> Publishing packages </summary>
     private Target Deploy => _ => _
         .DependsOn(SetBuildInfo)
+        .DependsOn(CompileAllRelease)
         .Executes(() => {
-            // !! публикация в master feed !!
-            BuildInfo.JenkinsParams[JenkinsInfo.BranchName] = "master";
-            BSpace.Projects.Compile("Release_x32", true);
-            BSpace.Projects.Compile("Release_x64", true);
-            BSpace.Projects.Deploy(Variant);
+            BSpace.Projects.Deploy(Variant, true);
         });
 
     /// <summary> Cleaning build results </summary>

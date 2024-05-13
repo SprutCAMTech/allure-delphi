@@ -1,12 +1,9 @@
 {
 	"vars": {
 		"msbuilder_path": "C:/Windows/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe",
-		"env_bds": "C:/program files (x86)/embarcadero/studio/22.0",
-		"rsvars_path": "C:/program files (x86)/embarcadero/studio/22.0/bin/rsvars.bat"
-	},
-
-	"projects": [
-		"../allure-delphi/main/.stbuild/AllureDelphiProject.json",
-		"../AllureDUnitXPackage/main/.stbuild/AllureDUnitXProject.json"
-	]
+		"env_bds": "C:/program files (x86)/embarcadero/studio/23.0",
+		"rsvars_path": "C:/program files (x86)/embarcadero/studio/23.0/bin/rsvars.bat",
+		"package_prefix": "SprutCAMTech",
+		"package_copyright": "Copyright (c) 2021 SprutCAM Tech Ltd. All rights reserved."
+	}
 }

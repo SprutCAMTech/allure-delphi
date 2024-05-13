@@ -8,6 +8,7 @@
 *.~*
 *.tvsconfig
 *.stat
+*.res
 
 # Build system files
 /.stbuild/.nuke/temp

@@ -66,6 +66,7 @@
             "enum": [
               "Clean",
               "Compile",
+              "CompileAllRelease",
               "Deploy",
               "Restore",
               "SetBuildInfo"
@@ -80,6 +81,7 @@
             "enum": [
               "Clean",
               "Compile",
+              "CompileAllRelease",
               "Deploy",
               "Restore",
               "SetBuildInfo"

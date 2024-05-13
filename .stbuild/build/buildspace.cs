@@ -1,22 +1,23 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text.Json.Nodes;
-using SprutCAMTech.Builder.MsDelphi;
-using SprutCAMTech.BuildSystem.ManagerObject;
+using SprutCAMTech.BuildSystem.Info;
+using SprutCAMTech.BuildSystem.Logging;
 using SprutCAMTech.BuildSystem.SettingsReader;
 using SprutCAMTech.BuildSystem.SettingsReader.Object;
-using SprutCAMTech.Cleaner.Common;
-using SprutCAMTech.HashGenerator;
-using SprutCAMTech.HashGenerator.Common;
-using SprutCAMTech.PackageManager.Nuget;
-using SprutCAMTech.ProjectCache.Common;
-using SprutCAMTech.Restorer.Nuget;
-using SprutCAMTech.VersionManager.Common;
-using SprutCAMTech.Package;
-using SprutCAMTech.BuildSystem.Info;
 using SprutCAMTech.BuildSystem.Variants;
-using Newtonsoft.Json.Linq;
+using SprutCAMTech.BuildSystem.ProjectList.Common;
+using SprutCAMTech.BuildSystem.Package;
+using SprutCAMTech.BuildSystem.Builder.MsDelphi;
+using SprutCAMTech.BuildSystem.VersionManager.Common;
+using SprutCAMTech.BuildSystem.ProjectCache.Common;
+using SprutCAMTech.BuildSystem.ProjectCache.NuGet;
+using SprutCAMTech.BuildSystem.HashGenerator.Common;
+using SprutCAMTech.BuildSystem.Restorer.Nuget;
+using SprutCAMTech.BuildSystem.Cleaner.Common;
+using SprutCAMTech.BuildSystem.PackageManager.Nuget;
+using SprutCAMTech.BuildSystem.ProjectList.Helpers;
+using SprutCAMTech.BuildSystem.ManagerObject.Interfaces;
 
 /// <inheritdoc />
 class BuildSpaceSettings : SettingsObject
@@ -26,42 +27,41 @@ class BuildSpaceSettings : SettingsObject
     const string DEVFEED = "https://nexus.office.sprut.ru/repository/dev-feed/index.json";
     const string MSTFEED = "https://nexus.office.sprut.ru/repository/master-feed/index.json";
 
-    ReaderJson readerJson;
+    ILogger _logger;
+    ReaderJson _readerJson;
+    private string GitBranch => BuildInfo.JenkinsParam(JenkinsInfo.BranchName) + "";
 
     /// <inheritdoc />
     /// <param name="configFiles"> Json configuration file paths </param>
-    public BuildSpaceSettings(string[] configFiles) : base() {
-        readerJson = new ReaderJson(Build.Logger);
-        readerJson.ReadRules(configFiles);
+    /// <param name="wdir"> Working directory </param>
+    /// <param name="logger"> Build space logger </param>
+    public BuildSpaceSettings(string[] configFiles, string wdir, ILogger logger) : base() {
+        _logger = logger;
+        _readerJson = new ReaderJson(_logger);
+        _readerJson.ReadRules(configFiles);
+        ReaderLocalVars = _readerJson.LocalVars;
+        ReaderDefines = _readerJson.Defines;
 
-        ReaderLocalVars = readerJson.LocalVars;
-        ReaderDefines = readerJson.Defines;
-        Projects = GetProjectList(configFiles);
+        Projects = new HashSet<string>() {
+            Path.Combine(wdir, "..\\AllureDUnitXPackage\\main\\.stbuild\\AllureDUnitXProject.json"),
+            Path.Combine(wdir, "..\\allure-delphi\\main\\.stbuild\\AllureDelphiProject.json")
+        };
+
+        ProjectListProps = new ProjectListCommonProps(_logger) {
+            BuildInfoSaverProps = new BuildInfoSaverCommonProps(),
+            AnalyzerProps = new AnalyzerCommonProps(),
+            SourceHashCalculatorProps = new SourceHashCalculatorCommonProps(),
+            CompilerProps = new CompilerCommonProps(),
+            CopierBuildResultsProps = new CopierBuildResultsCommonProps(),
+            DeployerProps = new DeployerCommonProps(),
+            ProjectRestorerProps = new ProjectRestorerCommonProps
+            {
+                RestoreInsteadOfBuild = (info) => false
+            },
+            GetNextVersion = GetNextVersion.FromRemotePackages
+        };
 
         RegisterBSObjects();
-    }
-
-    /// <summary>
-    /// Reads a list of projects from configFiles
-    /// </summary>
-    /// <param name="configFiles"> Json configuration file paths </param>
-    private HashSet<string> GetProjectList(string[] configFiles) {
-        var resultList = new HashSet<string>();
-        foreach (var config in configFiles) {
-            if (!File.Exists(config)) 
-                continue;
-
-            var jsonObj = JObject.Parse(File.ReadAllText(config));
-            if (jsonObj.TryGetValue("projects", IGNCASE, out var jprojs)) {
-                var configDir = Path.GetDirectoryName(config) + "";
-                foreach (var jproj in jprojs) {
-                    var projPath = Path.GetFullPath(Path.Combine(configDir, jproj.ToString()));
-                    if (File.Exists(projPath) && !resultList.Contains(projPath))
-                        resultList.Add(projPath);
-                }
-            }
-        }
-        return resultList;
     }
 
     /// <summary>
@@ -91,39 +91,23 @@ class BuildSpaceSettings : SettingsObject
             }
         };
 
-        ManagerProps = new List<IManagerProp> {
-            builderDelphiRelease,
-            builderDelphiDebug,
-            packageManagerNuget,
-            versionManagerCommon,
-            projectCacheCommon,
-            hashGeneratorCommon,
-            restorerNuget,
-            cleanerCommon,
-            cleanerCommonDelphi
-        };
-
-        foreach (var variant in Variants) {
-            if (variant.Name.StartsWith("Release")) {
-                ManagerNames.Add("builder_delphi", variant.Name, "builder_delphi_release");
-            } else {
-                ManagerNames.Add("builder_delphi", variant.Name, "builder_delphi_debug");
-            }
-            ManagerNames.Add("package_manager", variant.Name, "package_manager_nuget_rc");
-            ManagerNames.Add("version_manager", variant.Name, "version_manager_common");
-            ManagerNames.Add("project_cache", variant.Name, "project_cache_common");
-            ManagerNames.Add("hash_generator", variant.Name, "hash_generator_main");
-            ManagerNames.Add("restorer", variant.Name, "restorer_main");
-            ManagerNames.Add("cleaner", variant.Name, "cleaner_default_main");
-            ManagerNames.Add("cleaner_delphi", variant.Name, "cleaner_delphi_main");
-        }
+        AddManagerProp("builder_delphi", new() {"Release_x64", "Release_x32"}, builderDelphiRelease);
+        AddManagerProp("builder_delphi", new() {"Debug_x64", "Debug_x32"}, builderDelphiDebug);
+        AddManagerProp("package_manager", null, packageManagerNuget);
+        AddManagerProp("version_manager", null, versionManagerCommon);
+        AddManagerProp("hash_generator", null, hashGeneratorCommon);
+        AddManagerProp("restorer", null, restorerNuget);
+        AddManagerProp("cleaner", null, cleanerCommon);
+        AddManagerProp("cleaner_delphi", null, cleanerCommonDelphi);
+        AddManagerProp("project_cache", null, projectCacheNuGet); // projectCacheCommon
     }
 
-        BuilderMsDelphiProps builderDelphiRelease => new() {
+    BuilderMsDelphiProps builderDelphiRelease => new() {
         Name = "builder_delphi_release",
-        MsBuilderPath = readerJson.LocalVars["msbuilder_path"],
-        EnvBdsPath = readerJson.LocalVars["env_bds"],
-        RsVarsPath = readerJson.LocalVars["rsvars_path"],
+        BuilderVersion = "12.1-23.0",
+        MsBuilderPath = _readerJson.LocalVars["msbuilder_path"],
+        EnvBdsPath = _readerJson.LocalVars["env_bds"],
+        RsVarsPath = _readerJson.LocalVars["rsvars_path"],
         AutoClean = true,
         BuildParams = new Dictionary<string, string?>
         {
@@ -161,23 +145,23 @@ class BuildSpaceSettings : SettingsObject
         }
     }
 
-    VersionManagerCommonProps versionManagerCommon {
-        get {
-            var branch = BuildInfo.JenkinsParam(JenkinsInfo.BranchName) + "";
-            var vmcp = new VersionManagerCommonProps();
-            vmcp.Name = "version_manager_common";
-            vmcp.DepthSearch = 2;
-            vmcp.StartValue = 1;
-            vmcp.DevelopBranchName = branch.EndsWith("develop", IGNCASE) ? branch : "develop";
-            vmcp.MasterBranchName =  branch.EndsWith("master", IGNCASE) ? branch : "master";
-            vmcp.ReleaseBranchName = branch.EndsWith("release", IGNCASE) ? branch : "release";
-            return vmcp;
-        }
-    }
+    VersionManagerCommonProps versionManagerCommon => new() {
+        Name = "version_manager_common",
+        DepthSearch = 2,
+        DevelopBranchName = GitBranch.EndsWith("develop", IGNCASE) ? GitBranch : "develop",
+        MasterBranchName =  GitBranch.EndsWith("master", IGNCASE)  ? GitBranch : "master",
+        ReleaseBranchName = GitBranch.EndsWith("release", IGNCASE) ? GitBranch : "release"
+    };
 
     ProjectCacheCommonProps projectCacheCommon => new() {
-        Name = "project_cache_common",
-        IgnorePackageCache = false,
+        Name = "project_cache_main",
+        TempDir = "./hash"
+    };
+
+    ProjectCacheNuGetProps projectCacheNuGet => new() {
+        Name = "project_cache_nuget",
+        VersionManagerProps = versionManagerCommon,
+        PackageManagerProps = packageManagerNuget,
         TempDir = "./hash"
     };
 
@@ -206,24 +190,19 @@ class BuildSpaceSettings : SettingsObject
 
     PackageManagerNugetProps packageManagerNuget => new() {
         Name = "package_manager_nuget_rc",
-        SetStorageInfo = SetStorageInfoFunc
+        SetStorageInfo = SetStorageInfoFunc,
+        GitOptions = new()
     };
 
-    private StorageInfo SetStorageInfoFunc(PackageAction action, IPackageProps? packageProps) {
-        // APIKEY
-        var si = new StorageInfo();
-        si.ApiKey = readerJson.LocalVars["nuget_api_key"];
+    private StorageInfo SetStorageInfoFunc(PackageAction packageAction, string packageId, VersionProp? packageVersion) {
+       var isMaster = GitBranch.EndsWith("master", IGNCASE) 
+            && packageAction != PackageAction.Reclaim && packageAction != PackageAction.Delete;
+        var si = new StorageInfo() {
+            Url = isMaster ? MSTFEED : DEVFEED,
+            ApiKey = Environment.GetEnvironmentVariable("ST_NUGET_API_KEY")
+        };
 
-        // NUGET SOURCE
-        var branch = BuildInfo.JenkinsParam(JenkinsInfo.BranchName) + "";
-        if (!string.IsNullOrEmpty(branch))
-            si.Url = branch.EndsWith("master", IGNCASE) ? MSTFEED : DEVFEED; // master/develop
-        else
-            si.Url = readerJson.LocalVars["nuget_source"]; //default
-
-        Build.Logger.debug("SetStorageInfoFunc: branch=" + BuildInfo.JenkinsParam(JenkinsInfo.BranchName));
-        Build.Logger.debug("SetStorageInfoFunc: url=" + si.Url);
-        Build.Logger.debug("SetStorageInfoFunc: apiKey=" + si.ApiKey);
+        _logger.debug($"SetStorageInfoFunc: url={si.Url} - apiKey has " + !string.IsNullOrEmpty(si.ApiKey));
 
         return si;
     }
